@@ -194,8 +194,25 @@
       * VLAN을 이용하면 불필요한 트래픽을 분배하여 성능 저하를 방지할 수 있다.
       * VLAN을 사용하면 물리적인 스위치가 한 대라도 여러 대의 스위치가 있는 것처럼 호스트의 물리적 위치와 관계없이 논리적인 단위로 LAN을 구성하고 나눌 수 있다.
       * 
-    
 
+
+      ## 🌐 실습해보기 - IP 확인
+      <img width="328" height="39" alt="image" src="https://github.com/user-attachments/assets/2b05df4c-d946-44a0-ae4b-37c652c08b89" />
+
+      ## 🌐 실습해보기 - MAC 주소 확인
+     <img width="250" height="51" alt="image" src="https://github.com/user-attachments/assets/3de2dace-1016-44d1-8b8e-31f8771a0f73" />
+
+      ## 🌐 실습해보기 - 게이트웨이 Ping
+      <img width="520" height="206" alt="image" src="https://github.com/user-attachments/assets/6da885c9-5d04-4c88-ab5a-679dfce50957" />
+
+      ## 🌐 실습해보기 - 인터넷 Ping
+      <img width="419" height="202" alt="image" src="https://github.com/user-attachments/assets/c93109dd-5577-4420-99e4-26273afc06c8" />
+
+      ## 🌐 실습해보기 - DNS 확인 
+      <img width="335" height="276" alt="image" src="https://github.com/user-attachments/assets/5d3574da-e2b8-4a87-b747-65fa7fa75aaa" />
+
+      ## 🌐 실습해보기 - tracert
+      <img width="492" height="356" alt="image" src="https://github.com/user-attachments/assets/3fa14329-e091-4373-8fa5-8b6528a04bf8" />
 
 
 
