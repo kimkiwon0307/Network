@@ -233,28 +233,38 @@
    * 올바른 통신을 위해서는 두 주소를 모두 알아야하므로, 이 문제를 해결하기 위해 ARP 프로토콜이 사용된다.
    * ARP는 IP주소를 통해 MAC 주소를 알아 내는 프로토콜이다.
    * ARP는 동일 네트워크 내 송수신 대상의 MAC 주소를 파악하는데 활용된다.
-      
+  
+ * ARP 프로토콜의 동작 과정
+   * ARP 프로토콜은 세 단계를 거쳐 동작한다.
+     1. MAC주소를 알아내고자 하는 호스트느느 ARP 요청 메시지를 브로드 캐스트로 내보낸다.
+     2. 요청을 받은 호스트 중 해당 IP 주소의 소유자는 자신의 MAC 주소를 담은 ARP 응답 메시지를 유니캐스트로 요청 호스트에게 전송한다.
+     3. 이후 요청 호스트는 수신한 ARP 응답 메시지를 토대로 ARP 테이블이라는 정보를 갱신하여 IP 주소와 MAC 주소 매핑 정보를 기록한다.
+    
+ * ARP 패킷 형식과 ARP 테이블
+    * ARP 요청은 응답과 ARP 패킷을 주고받는 과정이다.
+    * ARP 패킷에는 오퍼레이션 코드(요청은1, 응답은 2), 송신지/수신지 하드웨어 주소(MAC주소), 송신지/수신지 프로토콜주소(IP주소)필드가 포함되어있다.
+    * ARP 테이블은 IP주소와 매핑된 MAC주소를 기록하여 유지하는 특별한 정보이다.     
 
 
 
 
-
-      ## 🌐 실습해보기 - IP 확인
+ 
+## 🌐 실습해보기 - IP 확인
       <img width="328" height="39" alt="image" src="https://github.com/user-attachments/assets/2b05df4c-d946-44a0-ae4b-37c652c08b89" />
 
-      ## 🌐 실습해보기 - MAC 주소 확인
+## 🌐 실습해보기 - MAC 주소 확인
      <img width="250" height="51" alt="image" src="https://github.com/user-attachments/assets/3de2dace-1016-44d1-8b8e-31f8771a0f73" />
 
-      ## 🌐 실습해보기 - 게이트웨이 Ping
+## 🌐 실습해보기 - 게이트웨이 Ping
       <img width="520" height="206" alt="image" src="https://github.com/user-attachments/assets/6da885c9-5d04-4c88-ab5a-679dfce50957" />
 
-      ## 🌐 실습해보기 - 인터넷 Ping
+## 🌐 실습해보기 - 인터넷 Ping
       <img width="419" height="202" alt="image" src="https://github.com/user-attachments/assets/c93109dd-5577-4420-99e4-26273afc06c8" />
 
-      ## 🌐 실습해보기 - DNS 확인 
+## 🌐 실습해보기 - DNS 확인 
       <img width="335" height="276" alt="image" src="https://github.com/user-attachments/assets/5d3574da-e2b8-4a87-b747-65fa7fa75aaa" />
 
-      ## 🌐 실습해보기 - tracert
+## 🌐 실습해보기 - tracert
       <img width="492" height="356" alt="image" src="https://github.com/user-attachments/assets/3fa14329-e091-4373-8fa5-8b6528a04bf8" />
 
 
