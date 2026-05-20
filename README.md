@@ -311,22 +311,22 @@
        
  
 ## 🌐 실습해보기 - IP 확인
-      <img width="328" height="39" alt="image" src="https://github.com/user-attachments/assets/2b05df4c-d946-44a0-ae4b-37c652c08b89" />
+   <img width="328" height="39" alt="image" src="https://github.com/user-attachments/assets/2b05df4c-d946-44a0-ae4b-37c652c08b89" />
 
 ## 🌐 실습해보기 - MAC 주소 확인
-     <img width="250" height="51" alt="image" src="https://github.com/user-attachments/assets/3de2dace-1016-44d1-8b8e-31f8771a0f73" />
+   <img width="250" height="51" alt="image" src="https://github.com/user-attachments/assets/3de2dace-1016-44d1-8b8e-31f8771a0f73" />
 
 ## 🌐 실습해보기 - 게이트웨이 Ping
-      <img width="520" height="206" alt="image" src="https://github.com/user-attachments/assets/6da885c9-5d04-4c88-ab5a-679dfce50957" />
+   <img width="520" height="206" alt="image" src="https://github.com/user-attachments/assets/6da885c9-5d04-4c88-ab5a-679dfce50957" />
 
 ## 🌐 실습해보기 - 인터넷 Ping
-      <img width="419" height="202" alt="image" src="https://github.com/user-attachments/assets/c93109dd-5577-4420-99e4-26273afc06c8" />
+   <img width="419" height="202" alt="image" src="https://github.com/user-attachments/assets/c93109dd-5577-4420-99e4-26273afc06c8" />
 
 ## 🌐 실습해보기 - DNS 확인 
-      <img width="335" height="276" alt="image" src="https://github.com/user-attachments/assets/5d3574da-e2b8-4a87-b747-65fa7fa75aaa" />
+   <img width="335" height="276" alt="image" src="https://github.com/user-attachments/assets/5d3574da-e2b8-4a87-b747-65fa7fa75aaa" />
 
 ## 🌐 실습해보기 - tracert
-      <img width="492" height="356" alt="image" src="https://github.com/user-attachments/assets/3fa14329-e091-4373-8fa5-8b6528a04bf8" />
+  <img width="492" height="356" alt="image" src="https://github.com/user-attachments/assets/3fa14329-e091-4373-8fa5-8b6528a04bf8" />
 
 
 
