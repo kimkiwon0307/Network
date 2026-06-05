@@ -1474,7 +1474,52 @@ CentOS/RHEL 계열에서 주로 사용하는 `firewalld` 데몬을 제어하는 
 * **전통적인 커널/시스템 메시지 로그 파일 실시간 추적:** `tail -f /var/log/messages`
 
 
+## 10.2 윈도 서버의 방화벽 확인 및 관리
+리눅스에서 `iptables`를 사용했다면, 윈도우 환경에서는 **Windows Defender Firewall(정식 명칭: 고급 보안이 설정된 Windows 숙성 방화벽)**을 사용합니다. 외부 하드웨어 방화벽과 별개로 서버 자체에서 인입/유출되는 패킷을 제어하는 호스트 기반 방화벽입니다.
 
+---
+
+### 10.2.1 윈도 방화벽 활성화/비활성화
+* **방화벽의 개념:** 윈도우 서버의 네트워크 인터페이스 앞단에서 패킷을 검사하여 정책에 따라 허용(Allow) 또는 차단(Drop/Block)을 결정하는 핵심 보안 기능입니다.
+* **GUI(그래픽 인터페이스) 실행 방법:** * `윈도우 키 + R` 입력 ➡️ `wf.msc` 입력 후 엔터 (고급 보안이 설정된 Windows Defender 방화벽 창이 열립니다.)
+* **PowerShell(CLI)을 통한 활성화/비활성화 (실무 팁):**
+  * **모든 프로필 방화벽 켜기:** `Set-NetFirewallProfile -All -Enabled True`
+  * **모든 프로필 방화벽 끄기:** `Set-NetFirewallProfile -All -Enabled False`
+
+---
+
+### 10.2.2 윈도 방화벽 정책 확인
+윈도우 방화벽은 트래픽의 방향에 따라 크게 두 가지 규칙으로 분리하여 관리합니다.
+
+* **인바운드(Inbound) 규칙:** 외부에서 **윈도우 서버 본체로 들어오는** 트래픽에 대한 제어 규칙 (예: 웹 서버의 80/443 포트 개방, RDP 3389 포트 접근 허용 등)
+* **아웃바운드(Outbound) 규칙:** 윈도우 서버 본체에서 **외부로 나가는** 트래픽에 대한 제어 규칙 (기본값은 모두 허용인 경우가 많으나, 보안 강화를 위해 특정 목적지 출력을 제한할 때 설정)
+
+---
+
+### 10.2.3 윈도 방화벽 정책 관리
+GUI 환경(`wf.msc`)의 우측 '작업' 창을 통해 규칙을 추가/삭제하거나, PowerShell 명령어로 신속하게 정책을 제어할 수 있습니다.
+
+* **PowerShell을 이용한 인바운드 규칙 추가 예시:**
+  * **웹 서비스(TCP 80) 허용 규칙 추가:**
+    ```powershell
+    New-NetFirewallRule -Name "Allow_HTTP" -DisplayName "HTTP 웹 서비스 허용" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+    ```
+  * **원격 데스크톱(RDP 3389) 특정 IP만 허용 (보안 강화):**
+    ```powershell
+    New-NetFirewallRule -Name "Allow_RDP_Specific" -DisplayName "특정 IP RDP 허용" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress 192.168.1.50 -Action Allow
+    ```
+
+---
+
+### 10.2.4 윈도 방화벽 로그 확인
+침입 시도 분석 및 네트워크 트러블슈팅을 위해 차단/허용된 패킷의 로그를 확인하는 방법입니다.
+
+* **로그 활성화 및 경로 설정:**
+  1. `wf.msc` 실행 ➡️ 중앙의 **[Windows Defender 방화벽 속성]** 클릭
+  2. 도메인/개인/공용 프로필별로 [로그] 항목의 **[사용자 지정]** 버튼 클릭
+  3. '낙하된 패킷 로그(Log dropped packets)' 및 '성공한 연결 로그'를 **[예(Yes)]**로 변경
+* **기본 로그 파일 저장 경로:**
+  * ➡️ `%systemroot%\system32\LogFiles\Firewall\pfirewall.log` (일반적으로 `C:\Windows\System32\LogFiles\Firewall\pfirewall.log`)
 
 
 
