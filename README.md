@@ -1563,8 +1563,9 @@ GUI 환경(`wf.msc`)의 우측 '작업' 창을 통해 규칙을 추가/삭제하
   * ➡️ `%systemroot%\system32\LogFiles\Firewall\pfirewall.log` (일반적으로 `C:\Windows\System32\LogFiles\Firewall\pfirewall.log`)
 
 </details>
+<details>
+<summary><kbd>📁 11장. 이중화 기술 (클릭하여 펼치기)</kbd></summary>
 
-## 11장 이중화 기술
 
 ### 11.1 이중화 기술 개요
 네트워크나 시스템에 장애가 발생하더라도 서비스가 중단되지 않고 지속해서 동작할 수 있도록 고안된 핵심 기술들을 다룹니다.
@@ -1596,7 +1597,7 @@ GUI 환경(`wf.msc`)의 우측 '작업' 창을 통해 규칙을 추가/삭제하
 | **보안 및 트래픽** | 방화벽(Firewall), 침입방지시스템(IPS), 로드 밸런서(Load Balancer) |
       
 
-
+</details>
 
 
 
