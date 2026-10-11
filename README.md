@@ -1,4 +1,6 @@
-# 네트워크 요약
+
+
+<details> <summary><h3> 1장 네트워크 시작 / 기본 개념 </h3></summary>
 
 # 네트워크 기본
 
@@ -38,6 +40,7 @@ Ethernet Frame
 Bit / Signal
 
 ---
+</details>
 
 # 네트워크 구성 요소
 
