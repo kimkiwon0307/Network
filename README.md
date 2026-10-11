@@ -193,251 +193,114 @@ ARP는 **IP Address $\rightarrow$ MAC Address**를 알아내는 기능입니다.
 1. RSTP : Rapid Spanning Tree Protocal
 2. MSTP는 여러 VLAN을 여러 Spanning Tree Instance로 묶어서 관리하는 방식이다.
 
-## 확인 문제
-1. Switch는 MAC Address Table을 어떻게 학습하나요?
+## 📋 네트워크 기초 Q&A 정리
 
-정답:
-Switch는 들어온 Ethernet Frame의 Source MAC 주소를 보고,
-그 MAC 주소가 어느 Port에 연결되어 있는지 MAC Address Table에 학습합니다.
+### 1. Switch는 MAC Address Table을 어떻게 학습하나요?
+* **정답:** Switch는 들어온 Ethernet Frame의 **Source MAC 주소**를 보고, 그 MAC 주소가 어느 Port에 연결되어 있는지 MAC Address Table에 학습합니다.
+* **핵심:** `MAC Learning = Source MAC`
 
-핵심:
-MAC Learning = Source MAC
+---
 
+### 2. Switch가 Destination MAC 주소를 모르면 어떻게 하나요?
+* **정답:** 들어온 Port를 제외한 **같은 VLAN의 다른 Port들로 Frame을 Flooding**합니다. 이후 목적지 장비가 응답하면 응답 Frame의 Source MAC을 보고 해당 MAC 주소의 위치를 학습합니다.
+* **핵심:** `Destination MAC을 모르면 = Flooding`
 
-2. Switch가 Destination MAC 주소를 모르면 어떻게 하나요?
+---
 
-정답:
-들어온 Port를 제외한 같은 VLAN의 다른 Port들로 Frame을 Flooding합니다.
+### 3. ARP Request가 들어오면 Switch는 어떻게 동작하나요?
+* **정답:** ARP Request는 **Broadcast Frame**이므로 Switch는 들어온 Port를 제외한 **같은 VLAN의 다른 Port들로 Flooding**합니다.
+* **핵심:** `ARP Request = Broadcast` / `Broadcast = 같은 VLAN에 Flooding`
 
-이후 목적지 장비가 응답하면
-응답 Frame의 Source MAC을 보고 해당 MAC 주소의 위치를 학습합니다.
+---
 
-핵심:
-Destination MAC을 모르면 = Flooding
+### 4. ARP Table과 Switch MAC Table의 차이는 무엇인가요?
+* **정답:** 
+  * **ARP Table:** IP 주소와 MAC 주소의 매핑 정보를 저장합니다. (`IP ↔ MAC`)
+  * **Switch MAC Table:** MAC 주소와 Switch Port의 매핑 정보를 저장합니다. (`MAC ↔ Port`)
 
+---
 
-3. ARP Request가 들어오면 Switch는 어떻게 동작하나요?
+### 5. VLAN을 사용하는 이유는 무엇인가요?
+* **정답:** 하나의 물리적인 Switch를 논리적으로 여러 네트워크로 분리하고, **Broadcast Domain을 나누기** 위해 사용합니다. 이를 통해 Broadcast 범위를 줄이고 네트워크 관리와 보안 측면에서 도움을 줍니다.
+* **핵심:** `VLAN = Broadcast Domain 분리`
 
-정답:
-ARP Request는 Broadcast Frame이므로
-Switch는 들어온 Port를 제외한 같은 VLAN의 다른 Port들로 Flooding합니다.
+---
 
-핵심:
-ARP Request = Broadcast
-Broadcast = 같은 VLAN에 Flooding
+### 6. VLAN 10과 VLAN 20은 기본적으로 서로 통신할 수 있나요?
+* **정답:** 기본적으로 **직접 통신할 수 없습니다.** 서로 다른 VLAN은 서로 다른 L2 Broadcast Domain이므로 통신하려면 Router나 L3 Switch를 통한 **Inter-VLAN Routing**이 필요합니다.
+* **핵심:** `서로 다른 VLAN 간 통신 = L3 Routing 필요`
 
+---
 
-4. ARP Table과 Switch MAC Table의 차이는 무엇인가요?
+### 7. Access Port와 Trunk Port의 차이는 무엇인가요?
+* **정답:**
+  * **Access Port:** 보통 하나의 VLAN에 속하며 PC나 Server 같은 End Device를 연결할 때 사용합니다. (`하나의 VLAN`)
+  * **Trunk Port:** 여러 VLAN의 Traffic을 하나의 링크로 전달할 때 사용합니다. (`여러 VLAN`)
 
-정답:
-ARP Table은 IP 주소와 MAC 주소의 매핑 정보를 저장합니다.
+---
 
-Switch MAC Table은
-MAC 주소와 Switch Port의 매핑 정보를 저장합니다.
+### 8. 802.1Q란 무엇인가요?
+* **정답:** 802.1Q는 Trunk 구간에서 Ethernet Frame에 VLAN 정보를 표시하기 위해 사용하는 **VLAN Tagging 표준**입니다. 여러 VLAN Traffic이 하나의 Trunk Link를 지나갈 때 어느 VLAN의 Frame인지 구분할 수 있게 해줍니다.
+* **핵심:** `802.1Q = VLAN Tagging`
 
-즉,
+---
 
-ARP Table
-= IP ↔ MAC
+### 9. L2 Loop가 발생하면 어떤 문제가 생기나요?
+* **정답:** Broadcast Frame이 반복해서 순환하면서 **Broadcast Storm**이 발생할 수 있습니다. 또한 같은 MAC 주소가 여러 Port에서 반복적으로 학습되는 **MAC Flapping**이 발생하여 결과적으로 네트워크 성능 저하와 서비스 장애를 일으킵니다.
+* **핵심:** `L2 Loop → Broadcast Storm → MAC Flapping → 네트워크 장애`
 
-Switch MAC Table
-= MAC ↔ Port
+---
 
+### 10. STP를 사용하는 이유는 무엇인가요?
+* **정답:** Switch 간에 이중화된 경로가 있을 때 발생할 수 있는 **L2 Loop를 방지**하기 위해 사용합니다. 여러 경로 중 일부 경로를 논리적으로 차단해서 Loop가 없는 구조를 만듭니다.
+* **핵심:** `STP = L2 Loop 방지`
 
-5. VLAN을 사용하는 이유는 무엇인가요?
+---
 
-정답:
-하나의 물리적인 Switch를 논리적으로 여러 네트워크로 분리하고,
-Broadcast Domain을 나누기 위해 사용합니다.
+### 11. STP는 L2 Loop를 어떻게 방지하나요?
+* **정답:** 여러 Switch 경로 중 일부 Port를 논리적으로 **Blocking 상태**로 만들어 Frame이 무한히 순환하지 않도록 합니다. 정상 경로에 장애가 발생하면 기존에 차단되어 있던 대체 경로를 사용합니다.
 
-이를 통해 Broadcast 범위를 줄이고
-네트워크 관리와 보안 측면에서도 도움이 됩니다.
+---
 
-핵심:
-VLAN = Broadcast Domain 분리
+### 12. RSTP와 STP의 차이는 무엇인가요?
+* **정답:** RSTP(Rapid Spanning Tree Protocol)는 기존 STP보다 네트워크 장애 발생 시 **더 빠르게 수렴(Convergence)**하도록 개선된 방식입니다.
+* **핵심:** `STP = L2 Loop 방지` / `RSTP = 더 빠른 STP`
 
+---
 
-6. VLAN 10과 VLAN 20은 기본적으로 서로 통신할 수 있나요?
+### 13. MAC Flapping이란 무엇인가요?
+* **정답:** 같은 MAC 주소가 짧은 시간 동안 여러 Switch Port에서 반복적으로 학습되는 현상으로, L2 Loop 등이 발생했을 때 나타납니다.
+  * *예시:* `AA:AA:AA → Fa0/1` ⇄ `AA:AA:AA → Fa0/2`
+* **핵심:** `MAC Flapping = 같은 MAC이 여러 Port에서 반복 학습`
 
-정답:
-기본적으로 직접 통신할 수 없습니다.
+---
 
-서로 다른 VLAN은 서로 다른 L2 Broadcast Domain이므로
-통신하려면 Router나 L3 Switch를 통한 Inter-VLAN Routing이 필요합니다.
+### 14. Broadcast Domain과 Collision Domain의 차이는 무엇인가요?
+* **정답:**
+  * **Broadcast Domain:** Broadcast Frame이 전달되는 범위입니다. (VLAN으로 분리)
+  * **Collision Domain:** Ethernet에서 Frame 충돌이 발생할 수 있는 범위입니다. (Switch 환경에서는 각 Port마다 분리)
 
-핵심:
-서로 다른 VLAN 간 통신
-= L3 Routing 필요
+---
 
+### 15. 같은 Switch에 연결되어 있어도 VLAN이 다르면 왜 통신이 안 되나요?
+* **정답:** 서로 다른 VLAN은 서로 다른 L2 Broadcast Domain이기 때문에, 같은 물리적 Switch에 연결되어 있어도 논리적으로는 완전히 다른 네트워크로 분리되어 있습니다. 통신을 위해서는 Routing이 필수적입니다.
 
-7. Access Port와 Trunk Port의 차이는 무엇인가요?
+---
 
-정답:
-Access Port는 보통 하나의 VLAN에 속하며
-PC나 Server 같은 End Device를 연결할 때 사용합니다.
+## 📌 핵심 암기 요약
 
-Trunk Port는 여러 VLAN의 Traffic을 하나의 링크로 전달할 때 사용합니다.
-
-즉,
-
-Access Port
-= 하나의 VLAN
-
-Trunk Port
-= 여러 VLAN
-
-
-8. 802.1Q란 무엇인가요?
-
-정답:
-802.1Q는 Trunk 구간에서 Ethernet Frame에
-VLAN 정보를 표시하기 위해 사용하는 VLAN Tagging 표준입니다.
-
-여러 VLAN Traffic이 하나의 Trunk Link를 지나갈 때
-어느 VLAN의 Frame인지 구분할 수 있게 해줍니다.
-
-핵심:
-802.1Q
-= VLAN Tagging
-
-
-9. L2 Loop가 발생하면 어떤 문제가 생기나요?
-
-정답:
-Broadcast Frame이 반복해서 순환하면서 Broadcast Storm이 발생할 수 있습니다.
-
-또한 같은 MAC 주소가 여러 Port에서 반복적으로 학습되는
-MAC Flapping이 발생할 수 있습니다.
-
-결과적으로 네트워크 성능 저하와 서비스 장애가 발생할 수 있습니다.
-
-핵심:
-L2 Loop
-→ Broadcast Storm
-→ MAC Flapping
-→ 네트워크 장애
-
-
-10. STP를 사용하는 이유는 무엇인가요?
-
-정답:
-Switch 간에 이중화된 경로가 있을 때 발생할 수 있는
-L2 Loop를 방지하기 위해 사용합니다.
-
-STP는 여러 경로 중 일부 경로를 논리적으로 차단해서
-Loop가 없는 구조를 만듭니다.
-
-핵심:
-STP
-= L2 Loop 방지
-
-
-11. STP는 L2 Loop를 어떻게 방지하나요?
-
-정답:
-여러 Switch 경로 중 일부 Port를 논리적으로 Blocking 상태로 만들어
-Frame이 무한히 순환하지 않도록 합니다.
-
-정상 경로에 장애가 발생하면
-기존에 차단되어 있던 대체 경로를 사용할 수 있습니다.
-
-
-12. RSTP와 STP의 차이는 무엇인가요?
-
-정답:
-RSTP는 Rapid Spanning Tree Protocol의 약자로,
-기존 STP보다 네트워크 장애 발생 시 더 빠르게 수렴하도록 개선된 방식입니다.
-
-핵심:
-STP
-= L2 Loop 방지
-
-RSTP
-= 더 빠른 STP
-
-
-13. MAC Flapping이란 무엇인가요?
-
-정답:
-같은 MAC 주소가 짧은 시간 동안 여러 Switch Port에서
-반복적으로 학습되는 현상입니다.
-
-L2 Loop 등이 발생했을 때 나타날 수 있습니다.
-
-예:
-
-AA:AA:AA → Fa0/1
-AA:AA:AA → Fa0/2
-AA:AA:AA → Fa0/1
-
-핵심:
-MAC Flapping
-= 같은 MAC이 여러 Port에서 반복 학습
-
-
-14. Broadcast Domain과 Collision Domain의 차이는 무엇인가요?
-
-정답:
-Broadcast Domain은 Broadcast Frame이 전달되는 범위입니다.
-
-Collision Domain은 Ethernet에서 Frame 충돌이 발생할 수 있는 범위입니다.
-
-Switch 환경에서는 일반적으로 각 Switch Port마다 Collision Domain이 분리됩니다.
-
-VLAN을 사용하면 Broadcast Domain을 분리할 수 있습니다.
-
-
-15. 같은 Switch에 연결되어 있어도 VLAN이 다르면 왜 통신이 안 되나요?
-
-정답:
-서로 다른 VLAN은 서로 다른 L2 Broadcast Domain이기 때문입니다.
-
-같은 물리적 Switch에 연결되어 있어도
-논리적으로는 서로 다른 네트워크로 분리되어 있습니다.
-
-따라서 서로 통신하려면 Router나 L3 Switch를 통한 Routing이 필요합니다.
-
-
-[핵심 암기]
-
-Switch 학습
-= Source MAC
-
-Destination MAC 모름
-= Flooding
-
-ARP Request
-= Broadcast
-
-ARP Table
-= IP ↔ MAC
-
-Switch MAC Table
-= MAC ↔ Port
-
-VLAN
-= Broadcast Domain 분리
-
-Access Port
-= 하나의 VLAN
-
-Trunk Port
-= 여러 VLAN
-
-802.1Q
-= VLAN Tagging
-
-L2 Loop
-→ Broadcast Storm
-→ MAC Flapping
-
-STP
-= L2 Loop 방지
-
-RSTP
-= 더 빠른 STP
-
-서로 다른 VLAN 간 통신
-= L3 Routing 필요
+* **Switch 학습:** Source MAC
+* **Destination MAC 모름:** Flooding
+* **ARP Request:** Broadcast (같은 VLAN에 Flooding)
+* **ARP Table:** IP ↔ MAC
+* **Switch MAC Table:** MAC ↔ Port
+* **VLAN:** Broadcast Domain 분리
+* **Access Port:** 하나의 VLAN
+* **Trunk Port:** 여러 VLAN
+* **802.1Q:** VLAN Tagging
+* **L2 Loop:** Broadcast Storm → MAC Flapping
+* **STP:** L2 Loop 방지
+* **RSTP:** 더 빠른 STP
+* **서로 다른 VLAN 간 통신:** L3 Routing 필요
 
 </dtails>
