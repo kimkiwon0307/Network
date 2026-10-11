@@ -42,7 +42,10 @@ Bit / Signal
 ---
 </details>
 
-# 네트워크 구성 요소
+
+
+<details> <summary><h3> 2장 네트워크 연결과 구성 요소 </h3></summary>
+
 
 ## LAN / WAN
 * **LAN**: 집, 회사, 사무실, 데이터센터 내부처럼 비교적 제한된 범위의 네트워크
@@ -62,10 +65,11 @@ Bit / Signal
 * **Firewall**: 정책상 이 통신을 허용할까?
 * **IPS**: 이 통신 안에 공격 패턴이 있는가?
 * **Load Balancer**: 어느 서버에 요청을 보낼까?
-
 ---
+</details>
 
-# 주소와 통신
+
+<details> <summary><h3> 3장 네트워크 통신 방식과 주소 </h3></summary>
 
 ## Unicast / Broadcast / Multicast / Anycast
 * **Unicast**: 1대 1 통신 (일반적인 웹 접속은 대부분 Unicast)
@@ -118,3 +122,5 @@ ARP는 **IP Address $\rightarrow$ MAC Address**를 알아내는 기능입니다.
 ## TCP / UDP
 * **TCP**: 연결성(Connection-oriented), 신뢰성 보장, 순서 보장, 재전송 기능, 3-way Handshake
 * **UDP**: 비연결성(Connectionless), TCP보다 단순함, TCP처럼 전달 보장/재전송 기능 없음
+
+</details>
