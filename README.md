@@ -304,3 +304,471 @@ ARP는 **IP Address $\rightarrow$ MAC Address**를 알아내는 기능입니다.
 * **서로 다른 VLAN 간 통신:** L3 Routing 필요
 
 </dtails>
+
+<details> <summary><h3> 5장 라우터와 라우팅 </h3></summary>
+
+## Router의 역할
+1. Router는 서로 다른 네트워크를 연결하는 L3 장비이다.
+2. Pc가 다른 네트워크에 있는 서버로 가려면 Router가 필요하다.
+
+## Routing이란?
+1. Routing은 목적지 네트워크까지 어떤 경로로 갈지 결정하는 과정이다.
+2. Router는 내부에 Routing Table을 가지고 있다.
+3. Router는 목적지 IP와 Routing Table 표를 비교해서 Packet을 어디로 보낼지 판단한다.
+
+## Routing Table
+1. Linux에서 ip route로 볼 수 있다.
+
+## Direct Connected Route
+1. Router나 서버의 Interface에 직접 연결된 네트워크이다.
+2. Direct Connected : 자신의 Interface가 직접 속해 있는 네트워크
+
+## Static Route
+1. 관리자가 직접 경로를 설정하는 방식
+
+## Dynamic Routing
+1. Router끼리 Routing 정보를 자동으로 교환하는 방식
+2. 대표적으로 OSPF, BGP, RIP 등이 있다.
+
+## Default Route
+1. Default Route는 더 구체적인 경로가 없을 때 사용하는 마지막 경로
+
+## Default Gateway
+1. Host 입장에서 Default Route의 다음 홉 역할을 하는 Router가 Default Gateway이다.
+
+## Longest Prefix Match
+1. Router가 가장 구체적인 Prefix를 선택하는게 Longest Prefix Match이다.
+
+## Route 선택 기준
+1. 기본적으로 먼저 Longest Prefix Match가 중요하다.
+
+## Routing과 Fowarding 차이
+1. Routing : 경로 계산/선택
+2. Fowarding : 실제 전달
+
+## 확인문제
+1. Router의 역할은 무엇인가요?
+
+정답:
+Router는 서로 다른 네트워크를 연결하는 L3 장비입니다.
+Destination IP와 Routing Table을 확인해서
+Packet을 어느 경로로 보낼지 결정합니다.
+
+핵심:
+Router
+= Destination IP + Routing Table
+
+
+2. Routing이란 무엇인가요?
+
+정답:
+Routing은 목적지 Network까지 어떤 경로를 통해 갈지 결정하는 과정입니다.
+
+Router는 Routing Table을 참고해서
+목적지 IP에 맞는 경로를 선택합니다.
+
+핵심:
+Routing
+= 경로 선택
+
+
+3. Routing Table이란 무엇인가요?
+
+정답:
+Routing Table은 목적지 Network로 가기 위한 경로 정보가 저장된 표입니다.
+
+대표적으로 다음과 같은 정보가 포함될 수 있습니다.
+
+Destination Network
+Next Hop
+Interface
+Metric
+
+Router나 Server는 Destination IP를 Routing Table과 비교해서
+어느 경로로 Packet을 보낼지 결정합니다.
+
+
+4. Direct Connected Route란 무엇인가요?
+
+정답:
+Router나 Server의 Interface가 직접 속해 있는 Network입니다.
+
+예:
+
+ens32
+192.168.10.10/24
+
+이면
+
+192.168.10.0/24
+
+Network는 Direct Connected Network입니다.
+
+핵심:
+Direct Connected
+= Interface에 직접 연결된 Network
+
+
+5. Static Route란 무엇인가요?
+
+정답:
+관리자가 목적지 Network와 Next Hop을 직접 설정하는 Routing 방식입니다.
+
+장점:
+구성이 단순하고 경로를 명확하게 제어할 수 있습니다.
+
+단점:
+Network가 커지면 관리해야 할 Route가 많아집니다.
+
+핵심:
+Static Route
+= 관리자가 직접 설정
+
+
+6. Dynamic Routing이란 무엇인가요?
+
+정답:
+Router끼리 Routing 정보를 자동으로 교환하고
+Network 변화에 따라 경로를 학습하는 방식입니다.
+
+대표적인 Routing Protocol로
+OSPF, BGP, RIP 등이 있습니다.
+
+핵심:
+Dynamic Routing
+= Router끼리 Routing 정보 자동 교환
+
+
+7. Static Routing과 Dynamic Routing의 차이는 무엇인가요?
+
+정답:
+Static Routing은 관리자가 직접 경로를 설정합니다.
+
+Dynamic Routing은 Router끼리 Routing Protocol을 이용해서
+경로 정보를 자동으로 교환합니다.
+
+Static:
+수동 설정
+
+Dynamic:
+자동 학습
+
+
+8. Default Route란 무엇인가요?
+
+정답:
+Routing Table에 목적지와 일치하는 더 구체적인 경로가 없을 때
+사용하는 기본 경로입니다.
+
+IPv4에서는 다음과 같이 표현합니다.
+
+0.0.0.0/0
+
+Linux에서는 다음처럼 볼 수 있습니다.
+
+default via 192.168.111.2
+
+핵심:
+Default Route
+= 일치하는 경로가 없을 때 사용하는 마지막 경로
+
+
+9. Default Gateway란 무엇인가요?
+
+정답:
+Host가 자신의 Network 밖에 있는 목적지와 통신할 때
+Packet을 전달하는 Router의 Interface입니다.
+
+예:
+
+PC
+192.168.10.10/24
+
+Gateway
+192.168.10.1
+
+Server
+192.168.20.10
+
+PC는 Server로 직접 Frame을 보내는 것이 아니라
+먼저 Default Gateway로 전달합니다.
+
+핵심:
+다른 Network로 갈 때
+→ Default Gateway 사용
+
+
+10. Default Route와 Default Gateway의 차이는 무엇인가요?
+
+정답:
+Default Route는 Routing Table에 있는 경로 정보입니다.
+
+Default Gateway는 Host가 다른 Network로 갈 때
+Packet을 전달하는 Router의 주소입니다.
+
+예:
+
+default via 192.168.10.1
+
+여기서
+
+default
+= Default Route
+
+192.168.10.1
+= Default Gateway
+
+
+11. 다른 Network의 Server로 통신할 때
+Destination MAC은 누구의 MAC 주소인가요?
+
+정답:
+Default Gateway의 MAC 주소입니다.
+
+하지만 Destination IP는 최종 Server의 IP 주소입니다.
+
+즉,
+
+Destination MAC
+= Default Gateway MAC
+
+Destination IP
+= 최종 Server IP
+
+
+12. Router를 통과하면 MAC 주소와 IP 주소는 어떻게 되나요?
+
+정답:
+Router를 통과할 때 Ethernet Frame이 새로 만들어지므로
+Source MAC과 Destination MAC은 새로운 L2 구간에 맞게 변경됩니다.
+
+NAT가 없다면
+Source IP와 Destination IP는 그대로 유지됩니다.
+
+핵심:
+
+Router 통과
+→ MAC 변경
+→ IP 유지
+  (NAT가 없다면)
+
+
+13. Longest Prefix Match란 무엇인가요?
+
+정답:
+Routing Table에서 Destination IP와 일치하는 Route가 여러 개 있을 때
+가장 Prefix가 길고 가장 구체적인 Route를 선택하는 방식입니다.
+
+예:
+
+10.0.0.0/8
+10.20.0.0/16
+10.20.1.0/24
+
+Destination:
+10.20.1.50
+
+선택:
+10.20.1.0/24
+
+핵심:
+Longest Prefix Match
+= 가장 구체적인 Route 선택
+
+
+14. 다음 Routing Table에서 10.20.1.50으로 갈 때
+어떤 Route를 선택하나요?
+
+10.0.0.0/8
+10.20.0.0/16
+10.20.1.0/24
+0.0.0.0/0
+
+정답:
+10.20.1.0/24를 선택합니다.
+
+Destination IP와 일치하는 Route 중
+가장 Prefix가 긴 Route이기 때문입니다.
+
+
+15. Default Route보다 구체적인 Route가 있으면 어떤 Route를 사용하나요?
+
+정답:
+더 구체적인 Route를 사용합니다.
+
+Default Route는
+다른 일치하는 경로가 없을 때만 사용합니다.
+
+예:
+
+192.168.10.0/24
+0.0.0.0/0
+
+Destination:
+192.168.10.20
+
+선택:
+192.168.10.0/24
+
+
+16. Routing과 Forwarding의 차이는 무엇인가요?
+
+정답:
+Routing은 목적지까지 어떤 경로로 갈지 결정하는 과정입니다.
+
+Forwarding은 Routing 결과를 이용해서
+실제 Packet을 다음 Interface나 Next Hop으로 보내는 과정입니다.
+
+핵심:
+
+Routing
+= 길을 결정
+
+Forwarding
+= 결정한 길로 실제 전달
+
+
+17. Router는 Destination MAC을 보고 Routing 경로를 결정하나요?
+
+정답:
+아닙니다.
+
+Router는 Destination IP와 Routing Table을 보고
+어느 경로로 보낼지 결정합니다.
+
+MAC 주소는 현재 L2 구간에서
+다음 홉에게 Frame을 전달할 때 사용합니다.
+
+핵심:
+
+Switch
+→ Destination MAC
+
+Router
+→ Destination IP
+
+
+18. Linux에서 Routing Table을 확인하는 명령어는 무엇인가요?
+
+정답:
+
+ip route
+
+또는
+
+ip r
+
+를 사용할 수 있습니다.
+
+
+19. Linux에서 특정 목적지로 어떤 경로를 사용할지 확인하려면 어떻게 하나요?
+
+정답:
+
+ip route get 목적지_IP
+
+예:
+
+ip route get 8.8.8.8
+
+이 명령어를 사용하면
+어느 Gateway, Interface, Source IP를 사용할지 확인할 수 있습니다.
+
+
+20. 서버가 외부 Network와 통신되지 않을 때
+Routing 관점에서 무엇을 확인해야 하나요?
+
+정답:
+다음 항목을 확인할 수 있습니다.
+
+1. IP 주소와 Subnet 설정
+2. Routing Table
+3. Default Gateway
+4. 목적지 Network에 대한 Route 존재 여부
+5. Gateway까지 통신 가능한지
+6. traceroute를 통한 경로 확인
+
+대표 명령어:
+
+ip addr
+ip route
+ip route get 목적지_IP
+ping Gateway
+traceroute 목적지_IP
+
+
+[핵심 암기]
+
+Router
+= L3
+= Destination IP + Routing Table
+
+Routing
+= 경로 결정
+
+Forwarding
+= 실제 Packet 전달
+
+Direct Connected
+= Interface에 직접 연결된 Network
+
+Static Route
+= 관리자가 직접 설정
+
+Dynamic Routing
+= Router끼리 Routing 정보 자동 교환
+
+Default Route
+= 더 구체적인 경로가 없을 때 사용
+= 0.0.0.0/0
+
+Default Gateway
+= 다른 Network로 갈 때 사용하는 Router
+
+Longest Prefix Match
+= 가장 구체적인 Prefix 선택
+
+다른 Network 통신
+Destination MAC = Gateway MAC
+Destination IP = 최종 목적지 IP
+
+Router 통과
+MAC = 변경
+IP = 유지
+(NAT가 없다면)
+
+Linux Routing 확인
+= ip route
+
+특정 목적지 경로 확인
+= ip route get 목적지_IP
+
+</dtails>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
