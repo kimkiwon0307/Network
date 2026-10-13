@@ -746,8 +746,796 @@ Linux Routing 확인
 </dtails>
 
 
+<details> <summary><h3> 6장 L4 장비 / 세션 / 상태 기반 통신 </h3></summary>
 
+## L4에서는 무엇을 볼까?
+1. L4는 Transport Layer입니다.
+2. TCP / UDP
+3. Source Port
+4. Destination Port
+5. Connection State
+6. L4 장비는 단순히 IP만 보는 것이 아니라 TCP/UDP와 Port, 연결 상태까지 활용할 수 있다.
 
+## L4 Load Balancer
+1. IP, TCP, UDP, Port, Connection 정보를 기준으로 트래픽을 여러 서버에 나눈다.
+
+## L4와 L7 Load Balancer 차이
+1. L4는 Transport Layer 정보를 중심으로 본다.
+2. L7은 Http와 같은 Application Layer 정보까지 이해할 수 있다.
+3. L4 LB : IP, Port, TCP UDP
+4. L7 LB : HTTP Host URL Header 등
+
+## Connection / Session State
+1. TCP는 연결지향형이기 때문에 장비가 현재 연결 상태를 기억할 수 있다.
+2. Firewall이나 LB는 이 연결을 내부 Table에 기억할 수 잇다.
+3. State Table, Connection Table, Session Table 같은 이름으로 부를 수 있다.
+
+## Statefull과 Stateless
+1. Stateless 장비는 각 Packet을 독립적으로 판단한다.
+2. Stateful 장비는 연결 상태를 기억한다.
+
+## Stateful Firewall
+1. Stateful Firewall은 TCP Connection 정보를 저장한다.
+
+## SPI
+1. Stateful Packet Inspection
+2. Packet 하나만 보는 것이 아니라, 이 Packet이 어떤 연결에 속하는지도 함께 본다.
+3. SYN : 연결 시작
+4. SYN-ACK : 응답
+5. ACK : 연결 성립
+6. TCP 상태를 추적할 수 있다.
+
+## Load Balancer의 Connection Table
+1. 단순 Round Robin만 하는 게 아니라 현재 Connection을 추적할 수 있다.
+
+## 네트워크 세션과 로그인 세션은 다르다.
+1. 네트워크 장비의 Seesion/Connection은 Client IP:Port ↔ Server IP:Port 같은 TCP 연결 상태이다.
+2. Application 로그인 Session은 사용자 로그인 정보, 장바구니, 인증 상태 같은 애플리케이션 상태이다.
+
+## Load Balancer 환경에서 로그인 세션 문제
+1. Redis 같은 Shared Session Store에 세션을 공통 저장하는 방식도 있다.
+
+## 비대칭 경로
+1. Stateful 장비에서는 비대칭 경로가 문제가 될 수 있다.
+2. 요청/응답 경로가 달라지면 문제 가능
+
+## Session Sync
+1. Firewall이나 Load Balancer를 이중화하면 문제가 하나 있다.
+2. 장비 간에 Connection / Session State를 동기화 할 수 있다.
+3. 이를 Sesssio Sync / State Sync 라고 한다.
+
+## 확인 문제
+# 네트워크 6장 - L4 장비 / 세션 / 상태 기반 통신
+
+## 1. 핵심 개념 정리
+
+### L4 계층
+
+L4는 Transport Layer로 TCP, UDP, Port 번호 등을 다룬다.
+
+```text
+L4
+= TCP / UDP
+= Source Port
+= Destination Port
+= Connection State
+```
+
+예시:
+
+```text
+192.168.10.10:51000
+        ↓
+192.168.20.20:443
+```
+
+```text
+Source IP        = 192.168.10.10
+Source Port      = 51000
+Destination IP   = 192.168.20.20
+Destination Port = 443
+Protocol         = TCP
+```
+
+---
+
+### L4 Load Balancer
+
+L4 Load Balancer는 주로 IP, TCP/UDP, Port, Connection 정보를 기반으로 트래픽을 분산한다.
+
+```text
+Client
+   ↓
+L4 Load Balancer
+   ├── WEB01:443
+   └── WEB02:443
+```
+
+```text
+L4 LB
+= IP / TCP·UDP / Port 기반 분산
+```
+
+---
+
+### L4와 L7 Load Balancer 차이
+
+```text
+L4 Load Balancer
+→ IP
+→ TCP / UDP
+→ Port
+→ Connection
+
+L7 Load Balancer
+→ HTTP / HTTPS
+→ Host
+→ URL Path
+→ Header
+→ Cookie 등
+```
+
+예:
+
+```text
+/api
+→ API Server
+
+/images
+→ Image Server
+```
+
+L4와 L7을 구분하는 기준은 **어느 계층의 정보를 해석해서 Backend를 선택하느냐**이다.
+
+---
+
+### Stateful / Stateless
+
+#### Stateless
+
+각 Packet을 독립적으로 판단한다.
+
+```text
+Packet 1
+→ 별도 판단
+
+Packet 2
+→ 별도 판단
+```
+
+#### Stateful
+
+현재 Connection 상태를 기억한다.
+
+```text
+Client:51000
+↔
+Server:443
+
+State = ESTABLISHED
+```
+
+```text
+Stateless
+= Packet 단위 판단
+
+Stateful
+= Connection 상태 기억
+```
+
+---
+
+### Stateful Firewall
+
+Stateful Firewall은 기존 Connection 정보를 State Table에 저장한다.
+
+예:
+
+```text
+Client:51000
+↔
+Server:443
+ESTABLISHED
+```
+
+Server에서 돌아오는 응답 Traffic이 기존 연결의 응답인지 확인할 수 있다.
+
+---
+
+### SPI
+
+SPI는 Stateful Packet Inspection의 약자이다.
+
+Packet 하나만 독립적으로 판단하는 것이 아니라, 해당 Packet이 어떤 Connection에 속하는지까지 확인한다.
+
+```text
+SYN
+→ 연결 시작
+
+SYN-ACK
+→ 응답
+
+ACK
+→ 연결 성립
+```
+
+---
+
+### Session / Connection Table
+
+Firewall이나 Load Balancer는 현재 연결 정보를 Table에 저장할 수 있다.
+
+예:
+
+```text
+192.168.10.10:51000
+↔
+192.168.20.20:443
+
+ESTABLISHED
+```
+
+Load Balancer도 Client의 Connection을 어느 Backend Server에 전달했는지 기억할 수 있다.
+
+---
+
+### Network Session과 Application Session
+
+둘은 서로 다른 개념이다.
+
+```text
+Network Session
+= IP + Port 기반 TCP Connection 상태
+
+Application Session
+= 로그인 상태, 인증 정보, 장바구니 등
+```
+
+```text
+Network Session
+≠
+Application Login Session
+```
+
+---
+
+### Load Balancer와 로그인 Session 문제
+
+예:
+
+```text
+Client
+ ↓
+Load Balancer
+ ├── WEB01
+ └── WEB02
+```
+
+WEB01의 메모리에만 로그인 Session을 저장하면 다음 요청이 WEB02로 전달됐을 때 로그인 정보가 없을 수 있다.
+
+해결 방법:
+
+```text
+Sticky Session
+→ 같은 Client를 같은 Backend로 전달
+
+Shared Session Store
+→ Redis 등의 외부 저장소에 Session 저장
+```
+
+---
+
+### Asymmetric Routing
+
+요청과 응답의 경로가 서로 다른 것을 비대칭 경로라고 한다.
+
+예:
+
+```text
+요청
+Client → FW1 → Server
+
+응답
+Server → FW2 → Client
+```
+
+Stateful 장비에서는 FW2가 기존 Connection을 알지 못해 Packet을 비정상 Traffic으로 판단할 가능성이 있다.
+
+```text
+Asymmetric Routing
+= 요청/응답 경로가 다름
+
+Stateful 장비에서 문제 발생 가능
+```
+
+---
+
+### Session Sync
+
+Firewall이나 Load Balancer를 이중화할 경우 장비 간 Connection 상태를 동기화할 수 있다.
+
+```text
+FW1
+   ↕ Session Sync
+FW2
+```
+
+Active 장비에 장애가 발생해도 Standby 장비가 기존 Session 정보를 알고 있다면 기존 Connection 유지에 도움이 된다.
+
+---
+
+# 2. 확인문제 및 정답
+
+## 문제 1
+
+L4 계층에서 대표적으로 다루는 정보는 무엇인가?
+
+### 정답
+
+TCP, UDP, Source Port, Destination Port, Connection State 등을 다룬다.
+
+```text
+L4
+= TCP / UDP / Port / Connection
+```
+
+---
+
+## 문제 2
+
+L4 Load Balancer는 어떤 정보를 기반으로 트래픽을 분산하는가?
+
+### 정답
+
+주로 IP, TCP/UDP, Port, Connection 정보를 기반으로 트래픽을 분산한다.
+
+---
+
+## 문제 3
+
+L4 Load Balancer와 L7 Load Balancer의 가장 큰 차이는 무엇인가?
+
+### 정답
+
+트래픽을 어느 계층까지 해석해서 Backend를 선택하느냐의 차이이다.
+
+```text
+L4
+→ IP / TCP·UDP / Port
+
+L7
+→ HTTP / Host / URL / Header 등
+```
+
+---
+
+## 문제 4
+
+Stateless 장비란 무엇인가?
+
+### 정답
+
+이전 통신 상태를 기억하지 않고 각 Packet을 독립적으로 판단하는 장비이다.
+
+```text
+Stateless
+= Packet 단위 판단
+```
+
+---
+
+## 문제 5
+
+Stateful 장비란 무엇인가?
+
+### 정답
+
+기존 Connection 상태를 기억하고, 현재 Packet이 기존 연결과 관련된 Packet인지 판단할 수 있는 장비이다.
+
+```text
+Stateful
+= Connection 상태 기억
+```
+
+---
+
+## 문제 6
+
+Stateful Firewall을 사용하는 이유는 무엇인가?
+
+### 정답
+
+기존 Connection 정보를 기억하기 때문에 요청에 대한 정상적인 응답 Traffic을 기존 연결의 일부로 판단할 수 있다.
+
+---
+
+## 문제 7
+
+SPI란 무엇인가?
+
+### 정답
+
+SPI는 Stateful Packet Inspection의 약자로, Packet 하나만 보는 것이 아니라 해당 Packet이 어떤 Connection에 속하는지도 함께 확인하는 방식이다.
+
+---
+
+## 문제 8
+
+State Table 또는 Session Table에는 어떤 정보가 저장되는가?
+
+### 정답
+
+현재 Connection과 관련된 Source/Destination IP, Port, Protocol, Connection State 등의 정보가 저장될 수 있다.
+
+예:
+
+```text
+192.168.10.10:51000
+↔
+192.168.20.20:443
+
+ESTABLISHED
+```
+
+---
+
+## 문제 9
+
+Network Session과 Application Login Session은 같은 개념인가?
+
+### 정답
+
+아니다.
+
+```text
+Network Session
+= TCP/IP Connection 상태
+
+Application Session
+= 로그인, 인증, 장바구니 등의 애플리케이션 상태
+```
+
+---
+
+## 문제 10
+
+Load Balancer 환경에서 로그인 Session을 각 WEB Server의 메모리에만 저장하면 어떤 문제가 발생할 수 있는가?
+
+### 정답
+
+사용자가 WEB01에서 로그인한 후 다음 요청이 WEB02로 전달되면 WEB02에는 로그인 Session 정보가 없어 로그인이 풀린 것처럼 보일 수 있다.
+
+---
+
+## 문제 11
+
+Load Balancer 환경의 Session 문제를 해결하는 대표적인 방법은 무엇인가?
+
+### 정답
+
+Sticky Session 또는 Shared Session Store를 사용할 수 있다.
+
+```text
+Sticky Session
+→ 같은 Client를 같은 Server로 전달
+
+Shared Session Store
+→ Redis 등에 Session을 공통 저장
+```
+
+---
+
+## 문제 12
+
+Asymmetric Routing이란 무엇인가?
+
+### 정답
+
+Client의 요청 Traffic과 Server의 응답 Traffic이 서로 다른 경로를 사용하는 현상이다.
+
+```text
+요청 → FW1
+응답 → FW2
+```
+
+---
+
+## 문제 13
+
+Asymmetric Routing이 Stateful Firewall에서 문제가 될 수 있는 이유는 무엇인가?
+
+### 정답
+
+요청을 처리한 Firewall과 응답을 처리한 Firewall이 다르면 응답을 받은 Firewall이 기존 Connection 정보를 가지고 있지 않을 수 있기 때문이다.
+
+---
+
+## 문제 14
+
+Session Sync란 무엇인가?
+
+### 정답
+
+이중화된 Firewall이나 Load Balancer 사이에서 Connection 또는 Session 상태 정보를 동기화하는 기능이다.
+
+---
+
+## 문제 15
+
+Session Sync를 사용하는 이유는 무엇인가?
+
+### 정답
+
+Active 장비에 장애가 발생해 Standby 장비로 전환될 때 기존 Connection 정보를 유지하거나 연결 단절을 줄이기 위해 사용한다.
+
+---
+
+# 3. 면접형 질문 및 답변
+
+## 면접 질문 1
+
+### Q. Stateful과 Stateless의 차이를 설명해보세요.
+
+### A.
+
+Stateless는 각 Packet을 독립적으로 판단하고 이전 통신 상태를 기억하지 않습니다.
+
+Stateful은 기존 Connection 상태를 State Table에 저장하고, 현재 들어온 Packet이 기존 연결에 속하는 Packet인지 확인할 수 있습니다.
+
+```text
+Stateless
+= Packet 단위 판단
+
+Stateful
+= Connection 상태 기반 판단
+```
+
+---
+
+## 면접 질문 2
+
+### Q. Stateful Firewall은 어떻게 동작하나요?
+
+### A.
+
+Stateful Firewall은 Source/Destination IP, Port, Protocol과 TCP Connection 상태 등을 State Table에 저장합니다.
+
+Client가 Server로 정상적인 연결을 생성하면 Server에서 돌아오는 응답 Traffic을 기존 Connection의 응답으로 판단하여 처리할 수 있습니다.
+
+---
+
+## 면접 질문 3
+
+### Q. SPI가 무엇인가요?
+
+### A.
+
+SPI는 Stateful Packet Inspection의 약자입니다.
+
+Packet 하나만 독립적으로 검사하는 것이 아니라 현재 Packet이 어떤 Connection에 속하는지와 TCP 상태 등을 함께 확인하는 방식입니다.
+
+---
+
+## 면접 질문 4
+
+### Q. L4 Load Balancer와 L7 Load Balancer의 차이는 무엇인가요?
+
+### A.
+
+L4 Load Balancer는 IP, TCP/UDP, Port 등의 Transport Layer 정보를 기반으로 트래픽을 분산합니다.
+
+L7 Load Balancer는 HTTP Host, URL Path, Header 같은 Application Layer 정보까지 해석해서 Backend를 선택할 수 있습니다.
+
+```text
+L4
+= IP / Port / TCP·UDP
+
+L7
+= HTTP / Host / URL / Header
+```
+
+---
+
+## 면접 질문 5
+
+### Q. Load Balancer는 단순히 Round Robin으로 서버만 선택하나요?
+
+### A.
+
+아닙니다.
+
+Load Balancer는 새로운 Connection을 Backend에 분산할 뿐만 아니라 기존 Connection이 어느 Backend와 연결되어 있는지 Connection Table 등을 통해 추적할 수 있습니다.
+
+---
+
+## 면접 질문 6
+
+### Q. Load Balancer 환경에서 로그인 Session이 풀리는 문제가 발생할 수 있는 이유는 무엇인가요?
+
+### A.
+
+로그인 Session을 특정 WEB Server의 메모리에만 저장한 경우 다음 요청이 다른 WEB Server로 전달되면 해당 Server에는 사용자 Session 정보가 없을 수 있기 때문입니다.
+
+---
+
+## 면접 질문 7
+
+### Q. Load Balancer 환경의 Session 문제는 어떻게 해결할 수 있나요?
+
+### A.
+
+Sticky Session을 사용해서 같은 사용자의 요청을 같은 Backend Server로 보내거나, Redis 같은 Shared Session Store를 사용해 여러 서버가 동일한 Session 정보를 공유하도록 구성할 수 있습니다.
+
+---
+
+## 면접 질문 8
+
+### Q. Network Session과 Application Session의 차이는 무엇인가요?
+
+### A.
+
+Network Session은 IP와 Port를 기반으로 하는 TCP Connection 상태를 의미합니다.
+
+Application Session은 사용자 로그인 상태나 인증 정보, 장바구니 같은 애플리케이션 수준의 상태를 의미합니다.
+
+따라서 두 Session은 서로 다른 개념입니다.
+
+---
+
+## 면접 질문 9
+
+### Q. Asymmetric Routing이란 무엇인가요?
+
+### A.
+
+Client의 요청 Traffic과 Server의 응답 Traffic이 서로 다른 경로를 사용하는 것을 말합니다.
+
+예를 들어 요청은 FW1을 통과했지만 응답은 FW2를 통과하는 경우입니다.
+
+---
+
+## 면접 질문 10
+
+### Q. Asymmetric Routing이 Stateful Firewall에서 문제가 되는 이유는 무엇인가요?
+
+### A.
+
+FW1은 Client가 시작한 Connection 정보를 알고 있지만 FW2는 그 Connection 정보를 모를 수 있습니다.
+
+따라서 FW2가 응답 Packet을 새로운 또는 비정상 Traffic으로 판단해 차단할 가능성이 있습니다.
+
+---
+
+## 면접 질문 11
+
+### Q. Firewall을 이중화하면 기존 TCP Connection은 무조건 유지되나요?
+
+### A.
+
+무조건 유지되는 것은 아닙니다.
+
+Standby 장비가 기존 Connection 상태를 알지 못하면 Active 장비 장애 후 기존 Connection이 끊길 수 있습니다.
+
+따라서 필요한 경우 장비 간 Session 또는 State 정보를 동기화하는 기능을 사용합니다.
+
+---
+
+## 면접 질문 12
+
+### Q. Session Sync란 무엇이며 왜 필요한가요?
+
+### A.
+
+Session Sync는 이중화된 Firewall이나 Load Balancer 사이에서 Connection 상태 정보를 동기화하는 기능입니다.
+
+Active 장비 장애 시 Standby 장비가 기존 Session 정보를 이어받아 Connection 단절을 줄이기 위해 사용합니다.
+
+---
+
+## 면접 질문 13
+
+### Q. TCP Connection을 식별할 때 어떤 정보들을 사용할 수 있나요?
+
+### A.
+
+일반적으로 Source IP, Source Port, Destination IP, Destination Port, Protocol 정보를 이용해 Connection을 식별할 수 있습니다.
+
+이를 흔히 5-Tuple이라고 표현합니다.
+
+```text
+Source IP
+Source Port
+Destination IP
+Destination Port
+Protocol
+```
+
+---
+
+## 면접 질문 14
+
+### Q. L4 Load Balancer가 Connection 정보를 기억해야 하는 이유는 무엇인가요?
+
+### A.
+
+Client의 Connection을 WEB01로 전달했다면 해당 Connection의 후속 Packet들도 동일한 Backend로 전달해야 정상적인 TCP Connection을 유지할 수 있기 때문입니다.
+
+---
+
+## 면접 질문 15
+
+### Q. Stateful 장비 장애 시 기존 Connection에 어떤 문제가 발생할 수 있나요?
+
+### A.
+
+장비가 가지고 있던 Connection State 정보가 사라지면 기존 연결을 새로운 Traffic으로 인식하거나 정상적으로 처리하지 못해 TCP Connection이 끊길 수 있습니다.
+
+이중화 환경에서는 이를 줄이기 위해 State Sync 또는 Session Sync를 사용할 수 있습니다.
+
+---
+
+# 4. 핵심 암기
+
+```text
+L4
+= TCP / UDP / Port / Connection
+
+L4 Load Balancer
+= IP / TCP·UDP / Port 기반 분산
+
+L7 Load Balancer
+= HTTP / Host / URL / Header 기반 분산
+
+Stateless
+= Packet 단위 판단
+
+Stateful
+= Connection 상태 기억
+
+SPI
+= Stateful Packet Inspection
+
+State Table
+= Connection 정보 저장
+
+Network Session
+= TCP/IP Connection 상태
+
+Application Session
+= 로그인 / 인증 / 장바구니 상태
+
+Network Session
+≠
+Application Session
+
+Sticky Session
+= 같은 Client를 같은 Backend로 전달
+
+Shared Session Store
+= Redis 등에 Session 공통 저장
+
+Asymmetric Routing
+= 요청/응답 경로가 다름
+
+Stateful 장비에서
+Asymmetric Routing
+→ 문제 발생 가능
+
+Session Sync
+= 이중화 장비 간 Connection 상태 동기화
+
+5-Tuple
+= Source IP
++ Source Port
++ Destination IP
++ Destination Port
++ Protocol
+```
+
+# 5. 6장 한 줄 정리
+
+> L4 장비는 TCP/UDP와 Port, Connection 정보를 이용하며, Stateful 장비는 기존 연결 상태를 기억하기 때문에 비대칭 경로와 이중화 시 Session Sync가 중요하다.
+</details>
 
 
 
