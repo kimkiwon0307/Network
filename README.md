@@ -303,7 +303,7 @@ ARP는 **IP Address $\rightarrow$ MAC Address**를 알아내는 기능입니다.
 * **RSTP:** 더 빠른 STP
 * **서로 다른 VLAN 간 통신:** L3 Routing 필요
 
-</dtails>
+</details>
 
 <details> <summary><h3> 5장 라우터와 라우팅 </h3></summary>
 
@@ -743,7 +743,7 @@ Linux Routing 확인
 특정 목적지 경로 확인
 = ip route get 목적지_IP
 
-</dtails>
+</details>
 
 
 <details> <summary><h3> 6장 L4 장비 / 세션 / 상태 기반 통신 </h3></summary>
