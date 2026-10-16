@@ -1539,7 +1539,1265 @@ Session Sync
 
 
 
+<details> <summary><h3> 6장 L4 장비 / 세션 / 상태 기반 통신 </h3></summary>
+# 네트워크 7장 - NAT / DNS / GSLB / DHCP
 
+## 1. NAT / PAT
+
+NAT는 IP 주소를 변환하는 기술이다.
+
+예:
+
+```text
+192.168.10.10
+   ↓
+NAT
+   ↓
+공인 IP
+   ↓
+Internet
+```
+
+### NAT
+
+```text
+NAT
+= IP 주소 변환
+```
+
+### PAT
+
+PAT는 IP 주소뿐 아니라 Port 번호까지 함께 변환한다.
+
+여러 내부 장비가 하나의 공인 IP를 공유할 때 사용할 수 있다.
+
+```text
+192.168.10.10:50001 ─┐
+192.168.10.20:50002 ─┼→ 공인 IP 하나
+192.168.10.30:50003 ─┘
+```
+
+```text
+PAT
+= IP + Port 변환
+```
+
+---
+
+## 2. SNAT / DNAT
+
+### SNAT
+
+SNAT는 Source Address를 변환한다.
+
+주로 내부 Network에서 외부 Internet으로 나갈 때 사용한다.
+
+```text
+Private IP
+192.168.10.10
+   ↓ SNAT
+Public IP
+203.0.113.10
+```
+
+AWS NAT Gateway도 내부 Private EC2가 Internet으로 나갈 때
+Source 주소가 변환되는 형태로 이해할 수 있다.
+
+```text
+Private EC2
+→ NAT Gateway
+→ Internet
+```
+
+### DNAT
+
+DNAT는 Destination Address를 변환한다.
+
+외부에서 들어온 Traffic의 목적지를 내부 Server로 변경하는 방식으로 사용할 수 있다.
+
+```text
+203.0.113.10:80
+   ↓ DNAT
+192.168.10.20:80
+```
+
+핵심:
+
+```text
+SNAT
+= Source 주소 변환
+
+DNAT
+= Destination 주소 변환
+```
+
+---
+
+# 3. DNS
+
+DNS는 Domain Name을 IP 주소로 변환하는 시스템이다.
+
+```text
+www.example.com
+      ↓ DNS
+203.0.113.10
+```
+
+즉 사용자가 숫자 IP 대신 Domain Name을 사용할 수 있도록 해준다.
+
+---
+
+## 4. DNS 조회 흐름
+
+개념적인 흐름은 다음과 같다.
+
+```text
+Client
+ ↓
+DNS Resolver
+ ↓
+Root DNS
+ ↓
+TLD DNS
+ ↓
+Authoritative DNS
+ ↓
+IP 응답
+```
+
+### Root DNS
+
+어느 TLD DNS로 가야 하는지 안내한다.
+
+### TLD DNS
+
+어느 Authoritative DNS가 해당 Domain 정보를 가지고 있는지 안내한다.
+
+예:
+
+```text
+.com
+.net
+.kr
+```
+
+### Authoritative DNS
+
+해당 Domain의 실제 DNS Record를 가지고 있다.
+
+---
+
+# 5. DNS 주요 Record
+
+## A Record
+
+Domain Name을 IPv4 주소로 연결한다.
+
+```text
+example.com
+→ 203.0.113.10
+```
+
+```text
+A
+= Domain → IPv4
+```
+
+## AAAA Record
+
+Domain Name을 IPv6 주소로 연결한다.
+
+```text
+AAAA
+= Domain → IPv6
+```
+
+## CNAME Record
+
+Domain Name을 다른 Domain Name으로 연결한다.
+
+```text
+www.example.com
+→ example.com
+```
+
+```text
+CNAME
+= Domain → 다른 Domain
+```
+
+## MX Record
+
+Mail Server 정보를 지정한다.
+
+```text
+MX
+= Mail Server
+```
+
+## NS Record
+
+해당 Domain 또는 Zone의 Name Server 정보를 지정한다.
+
+```text
+NS
+= Name Server
+```
+
+## PTR Record
+
+IP 주소를 Domain Name으로 역방향 조회할 때 사용한다.
+
+```text
+PTR
+= IP → Domain
+```
+
+## TXT Record
+
+문자열 형태의 정보를 저장한다.
+
+SPF, Domain 검증 등의 목적으로 사용할 수 있다.
+
+## SOA Record
+
+DNS Zone의 기본 정보와 Serial, Timer 등의 정보를 저장한다.
+
+---
+
+# 6. DNS Cache와 TTL
+
+DNS 결과는 매번 처음부터 조회하지 않고 Cache할 수 있다.
+
+TTL은 DNS 정보를 Cache에 얼마나 오래 유지할지 나타낸다.
+
+예:
+
+```text
+TTL = 300초
+```
+
+이면 해당 DNS 결과를 약 5분 동안 Cache할 수 있다.
+
+따라서 DNS Record를 변경해도
+기존 Cache가 남아 있는 동안에는 이전 정보가 사용될 수 있다.
+
+```text
+TTL
+= DNS Cache 유지 시간
+```
+
+---
+
+# 7. hosts 파일과 DNS
+
+Linux에서는 `/etc/hosts` 파일을 이용해서
+특정 Domain 또는 Host Name과 IP 주소를 직접 연결할 수 있다.
+
+예:
+
+```text
+192.168.10.20 web01
+```
+
+이 설정은 해당 Local Host에서 사용하는 이름 매핑이다.
+
+DNS Server의 Record와는 별개의 개념이다.
+
+```text
+hosts
+= Local Host 이름 매핑
+
+DNS
+= 중앙 DNS Server를 통한 이름 해석
+```
+
+---
+
+# 8. GSLB
+
+GSLB는 Global Server Load Balancing의 약자이다.
+
+여러 지역 또는 Site 중
+어느 위치로 사용자를 보낼지 결정한다.
+
+예:
+
+```text
+사용자
+   ↓
+GSLB
+ ├→ 서울 DC
+ ├→ 부산 DC
+ └→ AWS Region
+```
+
+선택 기준으로는 다음과 같은 요소를 사용할 수 있다.
+
+```text
+위치
+Latency
+Health Check
+Weight
+```
+
+---
+
+## GSLB와 Local Load Balancer 차이
+
+```text
+GSLB
+= 어느 Site / Region으로 보낼 것인가?
+
+Local Load Balancer
+= 해당 Site 안에서 어느 Server로 보낼 것인가?
+```
+
+예:
+
+```text
+Client
+   ↓
+GSLB
+   ↓
+서울 Site
+   ↓
+Local Load Balancer
+   ├→ WEB01
+   └→ WEB02
+```
+
+---
+
+# 9. DHCP
+
+DHCP는 Client에게 Network 설정 정보를 자동으로 할당하는 프로토콜이다.
+
+대표적으로 다음 정보를 제공할 수 있다.
+
+```text
+IP Address
+Subnet Mask
+Default Gateway
+DNS Server
+Lease Time
+```
+
+---
+
+# 10. DHCP DORA
+
+DHCP의 기본 동작 과정은 DORA라고 한다.
+
+```text
+D = Discover
+O = Offer
+R = Request
+A = ACK
+```
+
+전체 흐름:
+
+```text
+Client
+ ↓
+DHCP Discover
+"DHCP Server 있나요?"
+
+DHCP Server
+ ↓
+DHCP Offer
+"이 IP를 사용할 수 있습니다."
+
+Client
+ ↓
+DHCP Request
+"이 IP를 사용하겠습니다."
+
+DHCP Server
+ ↓
+DHCP ACK
+"사용해도 됩니다."
+```
+
+핵심:
+
+```text
+DHCP DORA
+
+Discover
+→ Offer
+→ Request
+→ ACK
+```
+
+---
+
+# 11. DHCP Port
+
+DHCP는 UDP를 사용한다.
+
+```text
+DHCP Server
+= UDP 67
+
+DHCP Client
+= UDP 68
+```
+
+---
+
+# 12. DHCP Relay
+
+DHCP Discover는 Broadcast로 동작한다.
+
+Router는 기본적으로 L2 Broadcast를 다른 Network로 전달하지 않는다.
+
+따라서 DHCP Server가 다른 Network에 있으면
+DHCP Relay를 사용할 수 있다.
+
+```text
+Client Network
+      ↓
+DHCP Relay
+      ↓
+다른 Network의 DHCP Server
+```
+
+```text
+DHCP Relay
+= 다른 Network의 DHCP Server로 DHCP 요청을 전달
+```
+
+---
+
+# 13. 핵심 암기
+
+```text
+NAT
+= IP 주소 변환
+
+PAT
+= IP + Port 변환
+
+SNAT
+= Source 주소 변환
+
+DNAT
+= Destination 주소 변환
+
+
+DNS
+= Domain → IP
+
+A
+= Domain → IPv4
+
+AAAA
+= Domain → IPv6
+
+CNAME
+= Domain → 다른 Domain
+
+MX
+= Mail Server
+
+NS
+= Name Server
+
+PTR
+= IP → Domain
+
+TTL
+= DNS Cache 유지 시간
+
+
+GSLB
+= 여러 Site / Region 중 목적지 선택
+
+Local Load Balancer
+= Site 내부 Server 선택
+
+
+DHCP
+= Network 설정 자동 할당
+
+DHCP DORA
+= Discover
+→ Offer
+→ Request
+→ ACK
+
+DHCP Server
+= UDP 67
+
+DHCP Client
+= UDP 68
+
+DHCP Relay
+= 다른 Network의 DHCP Server로 요청 전달
+```
+
+# 14. 7장 한 줄 요약
+
+> NAT는 주소를 변환하고, DNS는 이름을 IP로 해석하며, GSLB는 여러 지역 중 목적지를 선택하고, DHCP는 Client의 Network 설정을 자동으로 할당한다.
+
+# 네트워크 7장 - 확인문제 및 면접형 질문
+
+## 1. 확인문제 및 정답
+
+### 문제 1. NAT란 무엇인가요?
+
+정답:
+
+NAT는 Network Address Translation의 약자로,
+IP 주소를 다른 IP 주소로 변환하는 기술입니다.
+
+예:
+
+```text
+192.168.10.10
+→ NAT
+→ 203.0.113.10
+```
+
+핵심:
+
+```text
+NAT = IP 주소 변환
+```
+
+---
+
+### 문제 2. PAT란 무엇인가요?
+
+정답:
+
+PAT는 IP 주소뿐 아니라 Port 번호까지 함께 변환하는 방식입니다.
+
+여러 내부 Client가 하나의 공인 IP를 공유할 때 사용할 수 있습니다.
+
+```text
+192.168.10.10:50001
+192.168.10.20:50002
+192.168.10.30:50003
+        ↓
+하나의 Public IP
+```
+
+핵심:
+
+```text
+PAT = IP + Port 변환
+```
+
+---
+
+### 문제 3. NAT와 PAT의 차이는 무엇인가요?
+
+정답:
+
+NAT는 주로 IP 주소를 변환하고,
+PAT는 IP 주소와 Port 번호를 함께 변환합니다.
+
+```text
+NAT = IP 변환
+PAT = IP + Port 변환
+```
+
+---
+
+### 문제 4. SNAT란 무엇인가요?
+
+정답:
+
+SNAT는 Source NAT의 약자로,
+Packet의 Source IP 주소를 변경하는 방식입니다.
+
+주로 내부 Network에서 Internet으로 나갈 때 사용합니다.
+
+```text
+Private IP
+→ SNAT
+→ Public IP
+→ Internet
+```
+
+핵심:
+
+```text
+SNAT = Source 주소 변환
+```
+
+---
+
+### 문제 5. DNAT란 무엇인가요?
+
+정답:
+
+DNAT는 Destination NAT의 약자로,
+Packet의 Destination IP 주소를 변경하는 방식입니다.
+
+외부에서 들어온 Traffic을 내부 Server로 전달할 때 사용할 수 있습니다.
+
+```text
+203.0.113.10:80
+→ DNAT
+→ 192.168.10.20:80
+```
+
+핵심:
+
+```text
+DNAT = Destination 주소 변환
+```
+
+---
+
+### 문제 6. AWS NAT Gateway는 어떤 용도로 사용하나요?
+
+정답:
+
+Private Subnet의 EC2가 Internet으로 Outbound 통신할 수 있도록 사용할 수 있습니다.
+
+Private EC2가 직접 Public IP를 가지고 있지 않아도
+NAT Gateway를 통해 Internet으로 나갈 수 있습니다.
+
+```text
+Private EC2
+→ NAT Gateway
+→ Internet
+```
+
+---
+
+### 문제 7. DNS란 무엇인가요?
+
+정답:
+
+DNS는 Domain Name을 IP 주소로 변환하는 시스템입니다.
+
+예:
+
+```text
+www.example.com
+→ DNS
+→ 203.0.113.10
+```
+
+핵심:
+
+```text
+DNS = Domain → IP
+```
+
+---
+
+### 문제 8. DNS Resolver의 역할은 무엇인가요?
+
+정답:
+
+Client의 DNS Query를 받아 필요한 DNS Server에 질의하고
+최종 결과를 Client에게 반환합니다.
+
+필요한 경우 Root, TLD, Authoritative DNS Server에 질의합니다.
+
+---
+
+### 문제 9. Root DNS의 역할은 무엇인가요?
+
+정답:
+
+Root DNS는 해당 Domain의 정보를 직접 모두 가지고 있는 것이 아니라
+어느 TLD DNS Server로 가야 하는지 안내합니다.
+
+예:
+
+```text
+.com
+.kr
+.net
+```
+
+---
+
+### 문제 10. TLD DNS의 역할은 무엇인가요?
+
+정답:
+
+TLD DNS는 해당 Domain 정보를 관리하는
+Authoritative DNS Server의 위치를 안내합니다.
+
+---
+
+### 문제 11. Authoritative DNS란 무엇인가요?
+
+정답:
+
+특정 Domain의 실제 DNS Record를 가지고 있는 DNS Server입니다.
+
+A, CNAME, MX 등의 실제 Record 정보를 제공할 수 있습니다.
+
+---
+
+### 문제 12. A Record란 무엇인가요?
+
+정답:
+
+Domain Name을 IPv4 주소로 연결하는 Record입니다.
+
+```text
+example.com
+→ 203.0.113.10
+```
+
+```text
+A = Domain → IPv4
+```
+
+---
+
+### 문제 13. AAAA Record란 무엇인가요?
+
+정답:
+
+Domain Name을 IPv6 주소로 연결하는 Record입니다.
+
+```text
+AAAA = Domain → IPv6
+```
+
+---
+
+### 문제 14. CNAME Record란 무엇인가요?
+
+정답:
+
+하나의 Domain Name을 다른 Domain Name으로 연결하는 Record입니다.
+
+```text
+www.example.com
+→ example.com
+```
+
+핵심:
+
+```text
+CNAME = Domain → 다른 Domain
+```
+
+---
+
+### 문제 15. MX Record란 무엇인가요?
+
+정답:
+
+해당 Domain의 Mail Server 정보를 지정하는 Record입니다.
+
+```text
+MX = Mail Server
+```
+
+---
+
+### 문제 16. NS Record란 무엇인가요?
+
+정답:
+
+해당 Domain 또는 DNS Zone을 담당하는 Name Server 정보를 지정합니다.
+
+```text
+NS = Name Server
+```
+
+---
+
+### 문제 17. PTR Record란 무엇인가요?
+
+정답:
+
+IP 주소를 Domain Name으로 역방향 조회할 때 사용하는 Record입니다.
+
+```text
+PTR = IP → Domain
+```
+
+---
+
+### 문제 18. TTL이란 무엇인가요?
+
+정답:
+
+TTL은 DNS 정보를 Cache에 얼마나 오래 유지할지를 나타내는 값입니다.
+
+예:
+
+```text
+TTL = 300초
+```
+
+이면 DNS 결과를 일정 시간 Cache할 수 있습니다.
+
+핵심:
+
+```text
+TTL = DNS Cache 유지 시간
+```
+
+---
+
+### 문제 19. DNS Record를 변경했는데 즉시 반영되지 않을 수 있는 이유는 무엇인가요?
+
+정답:
+
+Client, Resolver 등의 DNS Cache에 기존 Record가 남아 있을 수 있기 때문입니다.
+
+TTL이 만료될 때까지 이전 DNS 결과가 사용될 수 있습니다.
+
+---
+
+### 문제 20. hosts 파일과 DNS의 차이는 무엇인가요?
+
+정답:
+
+hosts 파일은 해당 Host 내부에 직접 저장하는 Local Name Mapping입니다.
+
+DNS는 DNS Server를 이용해 중앙에서 Name Resolution을 수행합니다.
+
+```text
+hosts
+= Local 설정
+
+DNS
+= DNS Server 기반 이름 해석
+```
+
+---
+
+### 문제 21. GSLB란 무엇인가요?
+
+정답:
+
+GSLB는 Global Server Load Balancing의 약자로,
+여러 지역 또는 Site 중 어느 곳으로 사용자를 보낼지 결정하는 기술입니다.
+
+예:
+
+```text
+Client
+ ↓
+GSLB
+ ├→ 서울 DC
+ ├→ 부산 DC
+ └→ AWS Region
+```
+
+---
+
+### 문제 22. GSLB는 어떤 기준으로 목적지를 선택할 수 있나요?
+
+정답:
+
+다음과 같은 기준을 사용할 수 있습니다.
+
+```text
+Location
+Latency
+Health Check
+Weight
+```
+
+---
+
+### 문제 23. GSLB와 Local Load Balancer의 차이는 무엇인가요?
+
+정답:
+
+GSLB는 여러 Site나 Region 중 어디로 보낼지 결정합니다.
+
+Local Load Balancer는 선택된 Site 안에서
+어느 Backend Server로 보낼지 결정합니다.
+
+```text
+GSLB
+= 어느 Site?
+
+Local LB
+= 그 Site 안의 어느 Server?
+```
+
+---
+
+### 문제 24. DHCP란 무엇인가요?
+
+정답:
+
+DHCP는 Client에게 Network 설정 정보를 자동으로 할당하는 프로토콜입니다.
+
+대표적으로 다음 정보를 제공할 수 있습니다.
+
+```text
+IP Address
+Subnet Mask
+Default Gateway
+DNS Server
+Lease Time
+```
+
+---
+
+### 문제 25. DHCP DORA 과정을 설명해보세요.
+
+정답:
+
+```text
+Discover
+→ Offer
+→ Request
+→ ACK
+```
+
+Discover:
+Client가 DHCP Server를 찾습니다.
+
+Offer:
+DHCP Server가 사용할 수 있는 IP를 제안합니다.
+
+Request:
+Client가 해당 IP를 사용하겠다고 요청합니다.
+
+ACK:
+DHCP Server가 사용을 승인합니다.
+
+---
+
+### 문제 26. DHCP는 어떤 Transport Protocol과 Port를 사용하나요?
+
+정답:
+
+DHCP는 UDP를 사용합니다.
+
+```text
+DHCP Server = UDP 67
+DHCP Client = UDP 68
+```
+
+---
+
+### 문제 27. DHCP Relay란 무엇인가요?
+
+정답:
+
+다른 Network에 있는 DHCP Server까지
+Client의 DHCP 요청을 전달하는 기능입니다.
+
+DHCP Discover는 Broadcast이지만
+Router는 일반적으로 Broadcast를 다른 Network로 전달하지 않기 때문에
+DHCP Relay를 사용할 수 있습니다.
+
+---
+
+## 2. 면접형 질문 및 답변
+
+### Q1. NAT와 PAT의 차이를 설명해보세요.
+
+답변:
+
+NAT는 IP 주소를 변환하는 기술이고,
+PAT는 IP 주소뿐 아니라 Port 번호까지 함께 변환합니다.
+
+PAT를 사용하면 여러 내부 Client가 하나의 공인 IP를
+Port 번호로 구분해 공유할 수 있습니다.
+
+---
+
+### Q2. SNAT와 DNAT의 차이를 설명해보세요.
+
+답변:
+
+SNAT는 Source IP 주소를 변경하며
+주로 내부 Network에서 외부로 나갈 때 사용합니다.
+
+DNAT는 Destination IP 주소를 변경하며
+외부에서 들어온 Traffic을 특정 내부 Server로 전달할 때 사용할 수 있습니다.
+
+```text
+SNAT = Source 변환
+DNAT = Destination 변환
+```
+
+---
+
+### Q3. Private EC2에서 NAT Gateway를 사용하는 이유는 무엇인가요?
+
+답변:
+
+Private Subnet의 EC2는 일반적으로 직접 Internet에서 접근받지 않도록 구성합니다.
+
+하지만 Package 설치나 외부 API 호출 등의 Outbound Internet 통신이 필요할 수 있습니다.
+
+이때 NAT Gateway를 통해 Private EC2가 Internet으로 나갈 수 있도록 구성할 수 있습니다.
+
+---
+
+### Q4. DNS 조회 과정을 설명해보세요.
+
+답변:
+
+Client는 먼저 DNS Resolver에 Query를 보냅니다.
+
+Resolver에 Cache가 없다면 필요한 경우 Root DNS,
+TLD DNS, Authoritative DNS 순서로 정보를 확인한 뒤
+최종 IP 주소를 Client에게 반환합니다.
+
+---
+
+### Q5. Root DNS, TLD DNS, Authoritative DNS의 차이는 무엇인가요?
+
+답변:
+
+Root DNS는 어느 TLD DNS로 가야 하는지 안내합니다.
+
+TLD DNS는 해당 Domain의 Authoritative DNS Server를 안내합니다.
+
+Authoritative DNS는 해당 Domain의 실제 DNS Record를 제공합니다.
+
+---
+
+### Q6. A Record와 CNAME Record의 차이는 무엇인가요?
+
+답변:
+
+A Record는 Domain Name을 IPv4 주소로 직접 연결합니다.
+
+CNAME Record는 Domain Name을 다른 Domain Name으로 연결합니다.
+
+```text
+A
+= Domain → IPv4
+
+CNAME
+= Domain → Domain
+```
+
+---
+
+### Q7. DNS TTL이 너무 길면 어떤 문제가 있을 수 있나요?
+
+답변:
+
+DNS Record를 변경해도 기존 Cache가 오래 유지되어
+새로운 IP나 설정으로 전환되는 데 시간이 오래 걸릴 수 있습니다.
+
+반대로 TTL이 너무 짧으면 DNS Query 수가 증가할 수 있습니다.
+
+---
+
+### Q8. hosts 파일과 DNS는 어떤 차이가 있나요?
+
+답변:
+
+hosts 파일은 해당 Host에서만 사용하는 Local Name Mapping입니다.
+
+DNS는 여러 Client가 사용할 수 있는 중앙 DNS Server 기반의 Name Resolution 방식입니다.
+
+---
+
+### Q9. GSLB와 일반 Load Balancer의 차이는 무엇인가요?
+
+답변:
+
+GSLB는 여러 Region이나 Data Center 중
+어느 Site로 사용자를 보낼지 결정합니다.
+
+일반 Local Load Balancer는 해당 Site 안에서
+어느 Backend Server로 요청을 보낼지 결정합니다.
+
+---
+
+### Q10. DHCP DORA를 설명해보세요.
+
+답변:
+
+DHCP Client가 Network 설정을 받는 기본 과정입니다.
+
+```text
+Discover
+→ DHCP Server 탐색
+
+Offer
+→ Server가 IP 제안
+
+Request
+→ Client가 IP 요청
+
+ACK
+→ Server가 최종 승인
+```
+
+---
+
+### Q11. DHCP Discover가 Broadcast인 이유는 무엇인가요?
+
+답변:
+
+Client는 처음 Network에 연결될 때
+DHCP Server의 IP 주소를 모를 수 있기 때문입니다.
+
+따라서 같은 Network 안에서 DHCP Server를 찾기 위해
+Broadcast 방식으로 Discover를 전송합니다.
+
+---
+
+### Q12. DHCP Server가 다른 Network에 있으면 어떻게 하나요?
+
+답변:
+
+DHCP Relay를 사용할 수 있습니다.
+
+Router는 일반적으로 Broadcast를 다른 Network로 전달하지 않기 때문에
+Relay가 Client의 DHCP 요청을 받아 다른 Network의 DHCP Server로 전달합니다.
+
+---
+
+### Q13. DNS 문제인지 Network 문제인지 어떻게 구분할 수 있나요?
+
+답변:
+
+먼저 IP 주소로 직접 통신이 가능한지 확인합니다.
+
+IP 통신은 되는데 Domain Name으로만 접속이 안 된다면
+DNS 문제를 의심할 수 있습니다.
+
+예:
+
+```bash
+ping 8.8.8.8
+nslookup example.com
+dig example.com
+```
+
+처럼 확인할 수 있습니다.
+
+---
+
+### Q14. DNS Cache는 왜 사용하나요?
+
+답변:
+
+매번 Root부터 DNS Query를 수행하지 않고
+기존 조회 결과를 재사용해 응답 속도를 높이고
+DNS Server의 부하를 줄이기 위해 사용합니다.
+
+---
+
+### Q15. GSLB에서 Health Check가 필요한 이유는 무엇인가요?
+
+답변:
+
+특정 Region이나 Data Center에 장애가 발생했을 때
+장애가 난 Site로 사용자를 보내지 않고
+정상 Site로 Traffic을 유도하기 위해 필요합니다.
+
+---
+
+## 3. 핵심 암기
+
+```text
+NAT
+= IP 변환
+
+PAT
+= IP + Port 변환
+
+SNAT
+= Source IP 변환
+
+DNAT
+= Destination IP 변환
+
+
+DNS
+= Domain → IP
+
+Resolver
+= Client 대신 DNS Query 수행
+
+Root
+= TLD 안내
+
+TLD
+= Authoritative DNS 안내
+
+Authoritative
+= 실제 DNS Record 제공
+
+
+A
+= Domain → IPv4
+
+AAAA
+= Domain → IPv6
+
+CNAME
+= Domain → Domain
+
+MX
+= Mail Server
+
+NS
+= Name Server
+
+PTR
+= IP → Domain
+
+TTL
+= DNS Cache 유지 시간
+
+
+GSLB
+= 여러 Site / Region 중 선택
+
+Local LB
+= Site 내부 Backend 선택
+
+
+DHCP
+= Network 설정 자동 할당
+
+DORA
+= Discover
+→ Offer
+→ Request
+→ ACK
+
+DHCP Server
+= UDP 67
+
+DHCP Client
+= UDP 68
+
+DHCP Relay
+= 다른 Network의 DHCP Server로 요청 전달
+```
+
+## 4. 면접용 한 줄 정리
+
+```text
+NAT/PAT
+→ 주소와 Port 변환
+
+DNS
+→ Domain Name Resolution
+
+GSLB
+→ 여러 지역 중 적절한 Site 선택
+
+DHCP
+→ Client Network 설정 자동 할당
+```
+
+</details>
 
 
 
