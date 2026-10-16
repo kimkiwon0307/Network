@@ -1539,7 +1539,7 @@ Session Sync
 
 
 
-<details> <summary><h3> 6장 L4 장비 / 세션 / 상태 기반 통신 </h3></summary>
+<details> <summary><h3> 7장 - NAT / DNS / GSLB / DHCP </h3></summary>
 # 네트워크 7장 - NAT / DNS / GSLB / DHCP
 
 ## 1. NAT / PAT
